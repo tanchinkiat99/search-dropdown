@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { AiOutlineSearch } from "react-icons/ai";
 import "./SearchDropdown.css";
 
 function SearchableDropdown({
@@ -9,6 +10,8 @@ function SearchableDropdown({
   description = "",
   showDropdownOnFocus = false,
   disabled = false,
+  width = 300,
+  height = 30,
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
@@ -25,8 +28,8 @@ function SearchableDropdown({
   // Handle selecting an item from the dropdown
   const handleSelect = (item) => {
     setSelectedItem(item);
-    hideDropdown();
     onSelect(item);
+    hideDropdown();
   };
 
   const handleOnFocus = () => {
@@ -39,10 +42,17 @@ function SearchableDropdown({
     hideDropdown();
   };
 
+  const handleOnTextInputChange = (e) => {
+    setSearchQuery(e.target.value);
+    if (e.target.value.length > 0) {
+      showDropdown();
+    }
+  };
+
   const renderDropDown = () => {
     return (
       isOpen && (
-        <div className="dropdown">
+        <div className="dropdown" style={{ width: width }}>
           {options
             // Filtering options based on search query
             .filter((item) =>
@@ -52,7 +62,10 @@ function SearchableDropdown({
               <div
                 key={index}
                 className="dropdown-item"
-                onClick={() => handleSelect(item)}
+                onClick={() => {
+                  console.log(item);
+                  handleSelect(item);
+                }}
               >
                 {item}
               </div>
@@ -63,19 +76,23 @@ function SearchableDropdown({
   };
 
   return (
-    <div className="searchable-dropdown">
-      <div>{label}</div>
-      <input
-        type="text"
-        placeholder={placeholder}
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        onFocus={handleOnFocus}
-        onBlur={handleOnBlur}
-        disabled={disabled}
-      />
+    <div className="search-wrapper">
+      <div className="text">{label}</div>
+      <div className="input-wrapper" style={{ width: width, height: height }}>
+        <AiOutlineSearch className="icon" size={25} />
+        <input
+          type="text"
+          placeholder={placeholder}
+          value={searchQuery}
+          onChange={handleOnTextInputChange}
+          onFocus={handleOnFocus}
+          onBlur={handleOnBlur}
+          disabled={disabled}
+          className="input"
+        />
+      </div>
       {renderDropDown()}
-      <div>{description}</div>
+      <div className="text">{description}</div>
     </div>
   );
 }
