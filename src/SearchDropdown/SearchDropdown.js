@@ -77,7 +77,13 @@ function SearchableDropdown({
   return (
     <div className="search-wrapper">
       <div className="text">{label}</div>
-      <div className="input-wrapper" style={{ width: width, height: height }}>
+      <div
+        className="input-wrapper"
+        style={{ width: width, height: height }}
+        tabIndex={0}
+        onFocus={handleOnFocus}
+        onBlur={handleOnBlur}
+      >
         <AiOutlineSearch className="icon" size={25} />
         <input
           type="text"
@@ -85,7 +91,7 @@ function SearchableDropdown({
           value={searchQuery}
           onChange={handleOnTextInputChange}
           onFocus={handleOnFocus}
-          onBlur={handleOnBlur}
+          // onBlur={handleOnBlur}
           disabled={disabled}
           className="input"
         />
