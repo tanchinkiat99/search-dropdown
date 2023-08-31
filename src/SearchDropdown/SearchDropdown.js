@@ -29,7 +29,6 @@ function SearchableDropdown({
   const handleSelect = (item) => {
     setSelectedItem(item);
     onSelect(item);
-    hideDropdown();
   };
 
   const handleOnFocus = () => {
@@ -90,8 +89,8 @@ function SearchableDropdown({
           disabled={disabled}
           className="input"
         />
+        {renderDropDown()}
       </div>
-      {renderDropDown()}
       <div className="text">{description}</div>
     </div>
   );
