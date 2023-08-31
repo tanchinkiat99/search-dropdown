@@ -1,47 +1,50 @@
 import React, { useState, useEffect } from "react";
 import "./SearchDropdown.css";
 
-function SearchableDropdown({ options, onSelect }) {
+function SearchableDropdown({
+  options = [],
+  onSelect = () => {},
+  placeholder = "",
+  label = "",
+  description = "",
+  showDropdownOnFocus = false,
+  disabled = false,
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
 
+  const showDropdown = () => {
+    setIsOpen(true);
+  };
+
+  const hideDropdown = () => {
+    setIsOpen(false);
+  };
+
   // Handle selecting an item from the dropdown
   const handleSelect = (item) => {
     setSelectedItem(item);
-    setIsOpen(false);
+    hideDropdown();
     onSelect(item);
   };
 
-  // Use useEffect to close the dropdown when clicking outside it
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (isOpen && !event.target.closest(".searchable-dropdown")) {
-        setIsOpen(false);
-      }
+  const handleOnFocus = () => {
+    if (showDropdownOnFocus) {
+      showDropdown();
     }
-    window.addEventListener("click", handleClickOutside);
-    return () => {
-      window.removeEventListener("click", handleClickOutside);
-    };
-  }, [isOpen]);
+  };
 
-  return (
-    <div className="searchable-dropdown">
-      {/* Render the input for searching */}
-      <input
-        type="text"
-        placeholder="Search..."
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        onClick={() => setIsOpen(true)}
-      />
+  const handleOnBlur = () => {
+    hideDropdown();
+  };
 
-      {/* Render the dropdown when it's open */}
-      {isOpen && (
+  const renderDropDown = () => {
+    return (
+      isOpen && (
         <div className="dropdown">
-          {/* Render filtered options based on searchQuery */}
-          {/* {options
+          {options
+            // Filtering options based on search query
             .filter((item) =>
               item.toLowerCase().includes(searchQuery.toLowerCase())
             )
@@ -53,9 +56,26 @@ function SearchableDropdown({ options, onSelect }) {
               >
                 {item}
               </div>
-            ))} */}
+            ))}
         </div>
-      )}
+      )
+    );
+  };
+
+  return (
+    <div className="searchable-dropdown">
+      <div>{label}</div>
+      <input
+        type="text"
+        placeholder={placeholder}
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        onFocus={handleOnFocus}
+        onBlur={handleOnBlur}
+        disabled={disabled}
+      />
+      {renderDropDown()}
+      <div>{description}</div>
     </div>
   );
 }
