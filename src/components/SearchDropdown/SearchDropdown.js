@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { AiOutlineSearch } from "react-icons/ai";
 import Checkbox from "@mui/material/Checkbox";
+import useDebounce from "../../hooks/useDebounce";
 import "./SearchDropdown.css";
 
 function SearchableDropdown({
@@ -13,11 +14,17 @@ function SearchableDropdown({
   disabled = false,
   width = 300,
   height = 30,
+  asyncSearch = true,
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [focused, setFocused] = useState(false);
   const [selected, setSelected] = useState(options.map((option) => false));
+  const debouncedSearchQuery = useDebounce(searchQuery, 1000);
+
+  const getSearchQuery = useCallback(() => {
+    return asyncSearch ? debouncedSearchQuery : searchQuery;
+  }, [asyncSearch, debouncedSearchQuery, searchQuery]);
 
   const showDropdown = () => {
     setIsOpen(true);
@@ -45,18 +52,16 @@ function SearchableDropdown({
 
   const handleOnTextInputChange = (e) => {
     setSearchQuery(e.target.value);
-    if (e.target.value.length > 0) {
-      showDropdown();
-    }
   };
 
   const renderDropDown = () => {
+    const newSearchQuery = getSearchQuery();
     return (
       isOpen && (
         <div className="dropdown" style={{ width: width }}>
           {options.map(
             (item, index) =>
-              item.toLowerCase().includes(searchQuery.toLowerCase()) && (
+              item.toLowerCase().includes(newSearchQuery.toLowerCase()) && (
                 <div
                   key={index}
                   className="dropdown-item"
@@ -79,12 +84,13 @@ function SearchableDropdown({
   };
 
   useEffect(() => {
-    if (showDropdownOnFocus && focused) {
+    const newSearchQuery = getSearchQuery();
+    if ((showDropdownOnFocus && focused) || newSearchQuery.length > 0) {
       showDropdown();
-    } else if (!focused) {
+    } else if (!focused || newSearchQuery.length === 0) {
       hideDropdown();
     }
-  });
+  }, [focused, getSearchQuery, showDropdownOnFocus, asyncSearch]);
 
   return (
     <div className="search-wrapper">

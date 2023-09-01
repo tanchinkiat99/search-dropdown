@@ -19,6 +19,7 @@ function App() {
           description="With default display and search on focus"
           showDropdownOnFocus={true}
           options={currencyData.map((item) => item.text)}
+          asyncSearch={false}
         />
       </div>
     </div>
