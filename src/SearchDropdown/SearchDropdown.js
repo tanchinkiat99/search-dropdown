@@ -15,9 +15,9 @@ function SearchableDropdown({
   height = 30,
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [focused, setFocused] = useState(false);
+  const [selected, setSelected] = useState(options.map((option) => false));
 
   const showDropdown = () => {
     setIsOpen(true);
@@ -28,9 +28,10 @@ function SearchableDropdown({
   };
 
   // Handle selecting an item from the dropdown
-  const handleSelect = (item) => {
-    setSelectedItem(item);
-    onSelect(item);
+  const handleSelect = (index) => {
+    const updatedSelected = [...selected];
+    updatedSelected[index] = !updatedSelected[index];
+    setSelected(updatedSelected);
   };
 
   const handleOnFocus = () => {
@@ -52,24 +53,25 @@ function SearchableDropdown({
     return (
       isOpen && (
         <div className="dropdown" style={{ width: width }}>
-          {options
-            // Filtering options based on search query
-            .filter((item) =>
-              item.toLowerCase().includes(searchQuery.toLowerCase())
-            )
-            .map((item, index) => (
-              <div
-                key={index}
-                className="dropdown-item"
-                onClick={() => {
-                  console.log(item);
-                  handleSelect(item);
-                }}
-              >
-                {item}
-                <Checkbox />
-              </div>
-            ))}
+          {options.map(
+            (item, index) =>
+              item.toLowerCase().includes(searchQuery.toLowerCase()) && (
+                <div
+                  key={index}
+                  className="dropdown-item"
+                  label={item}
+                  onClick={() => {
+                    handleSelect(index);
+                  }}
+                >
+                  <p>{item}</p>
+                  <Checkbox
+                    checked={selected[index]}
+                    onChange={() => handleSelect(index)}
+                  />
+                </div>
+              )
+          )}
         </div>
       )
     );
@@ -104,7 +106,6 @@ function SearchableDropdown({
           value={searchQuery}
           onChange={handleOnTextInputChange}
           onFocus={handleOnFocus}
-          // onBlur={handleOnBlur}
           disabled={disabled}
           className="input"
         />
