@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { AiOutlineSearch } from "react-icons/ai";
+import Checkbox from "@mui/material/Checkbox";
 import "./SearchDropdown.css";
 
 function SearchableDropdown({
@@ -66,6 +67,7 @@ function SearchableDropdown({
                 }}
               >
                 {item}
+                <Checkbox />
               </div>
             ))}
         </div>
