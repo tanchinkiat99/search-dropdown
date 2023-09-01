@@ -16,6 +16,7 @@ function SearchableDropdown({
   const [isOpen, setIsOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [focused, setFocused] = useState(false);
 
   const showDropdown = () => {
     setIsOpen(true);
@@ -32,13 +33,11 @@ function SearchableDropdown({
   };
 
   const handleOnFocus = () => {
-    if (showDropdownOnFocus) {
-      showDropdown();
-    }
+    setFocused(true);
   };
 
   const handleOnBlur = () => {
-    hideDropdown();
+    setFocused(false);
   };
 
   const handleOnTextInputChange = (e) => {
@@ -74,12 +73,24 @@ function SearchableDropdown({
     );
   };
 
+  useEffect(() => {
+    if (showDropdownOnFocus && focused) {
+      showDropdown();
+    } else if (!focused) {
+      hideDropdown();
+    }
+  });
+
   return (
     <div className="search-wrapper">
       <div className="text">{label}</div>
       <div
         className="input-wrapper"
-        style={{ width: width, height: height }}
+        style={
+          focused
+            ? { border: "2px solid blue", width: width, height: height }
+            : { border: "2px solid transparent", width: width, height: height }
+        }
         tabIndex={0}
         onFocus={handleOnFocus}
         onBlur={handleOnBlur}

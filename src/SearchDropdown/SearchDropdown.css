@@ -12,9 +12,6 @@
   padding: 8px;
   overflow: hidden;
 }
-.input-wrapper:focus {
-  border: 2px solid blue;
-}
 .text {
   font-weight: 350;
   font-size: 1.1em;
