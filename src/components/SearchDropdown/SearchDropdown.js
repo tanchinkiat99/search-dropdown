@@ -68,28 +68,38 @@ function SearchableDropdown({
 
   const renderDropDown = () => {
     const newSearchQuery = getSearchQuery();
+    const searchResults = options
+      .map(
+        (item, index) =>
+          item.toLowerCase().includes(newSearchQuery.toLowerCase()) && (
+            <div
+              key={index}
+              className="dropdown-item"
+              label={item}
+              onClick={() => {
+                handleSelect(index);
+              }}
+            >
+              <p>{item}</p>
+              <Checkbox
+                checked={selected[index]}
+                onChange={() => handleSelect(index)}
+              />
+            </div>
+          )
+      )
+      .filter((item) => item);
+    if (searchResults.length === 0) {
+      searchResults.push(
+        <div className="dropdown-no-result">
+          <p>No results to show</p>
+        </div>
+      );
+    }
     return (
       isOpen && (
         <div className="dropdown" style={{ width: width }}>
-          {options.map(
-            (item, index) =>
-              item.toLowerCase().includes(newSearchQuery.toLowerCase()) && (
-                <div
-                  key={index}
-                  className="dropdown-item"
-                  label={item}
-                  onClick={() => {
-                    handleSelect(index);
-                  }}
-                >
-                  <p>{item}</p>
-                  <Checkbox
-                    checked={selected[index]}
-                    onChange={() => handleSelect(index)}
-                  />
-                </div>
-              )
-          )}
+          {searchResults}
         </div>
       )
     );
@@ -97,7 +107,7 @@ function SearchableDropdown({
 
   useEffect(() => {
     const newSearchQuery = getSearchQuery();
-    if ((showDropdownOnFocus && focused) || newSearchQuery.length > 0) {
+    if (focused && (showDropdownOnFocus || newSearchQuery.length > 0)) {
       showDropdown();
     } else if (!focused || newSearchQuery.length === 0) {
       hideDropdown();

@@ -35,6 +35,9 @@
   box-shadow: 0px 1px 5px #cbcbcb;
   border-radius: 8px;
 }
+.dropdown-no-result {
+  padding-left: 8px;
+}
 .dropdown-item {
   padding-left: 8px;
   cursor: pointer;

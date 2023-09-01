@@ -13,7 +13,7 @@ function useDebounce(value, delay) {
       loadTimer = setTimeout(() => {
         setIsLoading(false);
         setUpdatedValue(value);
-      }, 700);
+      }, 500);
     };
 
     debounceTimer = setTimeout(startLoading, delay);
