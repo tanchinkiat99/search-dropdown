@@ -34,9 +34,15 @@ function SearchableDropdown({
   const currOptionRef = useRef(null);
 
   useEffect(() => {
-    if (arrowSelected >= 0 && arrowSelected < options.length) {
+    if (
+      arrowSelected >= 0 &&
+      arrowSelected < options.length &&
+      currOptionRef &&
+      currOptionRef.current
+    ) {
       currOptionRef.current.scrollIntoView({
         behavior: "smooth",
+        block: "nearest",
       });
     }
   }, [arrowSelected, options.length]);
