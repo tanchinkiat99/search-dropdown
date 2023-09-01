@@ -2,18 +2,29 @@ import { useEffect, useState } from "react";
 
 function useDebounce(value, delay) {
   const [updatedValue, setUpdatedValue] = useState(value);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setUpdatedValue(value);
-    }, delay);
+    let debounceTimer;
+    let loadTimer;
+
+    const startLoading = () => {
+      setIsLoading(true);
+      loadTimer = setTimeout(() => {
+        setIsLoading(false);
+        setUpdatedValue(value);
+      }, 700);
+    };
+
+    debounceTimer = setTimeout(startLoading, delay);
 
     return () => {
-      clearTimeout(timer);
+      clearTimeout(debounceTimer);
+      clearTimeout(loadTimer);
     };
   }, [value, delay]);
 
-  return updatedValue;
+  return { updatedValue, isLoading };
 }
 
 export default useDebounce;

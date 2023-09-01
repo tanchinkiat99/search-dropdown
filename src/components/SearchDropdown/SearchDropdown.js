@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { AiOutlineSearch } from "react-icons/ai";
 import Checkbox from "@mui/material/Checkbox";
 import useDebounce from "../../hooks/useDebounce";
+import ReactLoading from "react-loading";
 import "./SearchDropdown.css";
 
 function SearchableDropdown({
@@ -20,8 +21,10 @@ function SearchableDropdown({
   const [searchQuery, setSearchQuery] = useState("");
   const [focused, setFocused] = useState(false);
   const [selected, setSelected] = useState(options.map((option) => false));
-  const debouncedSearchQuery = useDebounce(searchQuery, 1000);
-
+  const { updatedValue: debouncedSearchQuery, isLoading } = useDebounce(
+    searchQuery,
+    1000
+  );
   const getSearchQuery = useCallback(() => {
     return asyncSearch ? debouncedSearchQuery : searchQuery;
   }, [asyncSearch, debouncedSearchQuery, searchQuery]);
@@ -52,6 +55,15 @@ function SearchableDropdown({
 
   const handleOnTextInputChange = (e) => {
     setSearchQuery(e.target.value);
+  };
+
+  const renderLoadingIndicator = () => {
+    return (
+      isLoading &&
+      asyncSearch && (
+        <ReactLoading type="spin" color="#000000" height={20} width={20} />
+      )
+    );
   };
 
   const renderDropDown = () => {
@@ -116,6 +128,7 @@ function SearchableDropdown({
           disabled={disabled}
           className="input"
         />
+        {renderLoadingIndicator()}
         {renderDropDown()}
       </div>
       <div className="text">{description}</div>
