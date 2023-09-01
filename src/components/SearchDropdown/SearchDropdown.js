@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { AiOutlineSearch } from "react-icons/ai";
 import Checkbox from "@mui/material/Checkbox";
 import useDebounce from "../../hooks/useDebounce";
+import useKeyDown from "../../hooks/useKeyDown";
 import ReactLoading from "react-loading";
 import "./SearchDropdown.css";
 
@@ -21,6 +22,7 @@ function SearchableDropdown({
   const [searchQuery, setSearchQuery] = useState("");
   const [focused, setFocused] = useState(false);
   const [selected, setSelected] = useState(options.map((option) => false));
+  const [arrowSelected, setArrowSelected] = useState(-1);
   const { updatedValue: debouncedSearchQuery, isLoading } = useDebounce(
     searchQuery,
     1000
@@ -28,6 +30,50 @@ function SearchableDropdown({
   const getSearchQuery = useCallback(() => {
     return asyncSearch ? debouncedSearchQuery : searchQuery;
   }, [asyncSearch, debouncedSearchQuery, searchQuery]);
+
+  const currOptionRef = useRef(null);
+
+  useEffect(() => {
+    if (arrowSelected >= 0 && arrowSelected < options.length) {
+      currOptionRef.current.scrollIntoView({
+        behavior: "smooth",
+      });
+    }
+  }, [arrowSelected, options.length]);
+
+  const handleArrowDown = () => {
+    if (arrowSelected < 0 || arrowSelected >= options.length - 1) {
+      setArrowSelected(0);
+    } else {
+      setArrowSelected(arrowSelected + 1);
+    }
+  };
+
+  const handleArrowUp = () => {
+    if (arrowSelected <= 0 || arrowSelected > options.length - 1) {
+      setArrowSelected(options.length - 1);
+    } else {
+      setArrowSelected(arrowSelected - 1);
+    }
+  };
+
+  const handleEnter = () => {
+    if (arrowSelected >= 0 && arrowSelected < options.length) {
+      handleSelect(arrowSelected);
+    }
+  };
+
+  useKeyDown(40, () => {
+    focused && handleArrowDown();
+  });
+
+  useKeyDown(38, () => {
+    focused && handleArrowUp();
+  });
+
+  useKeyDown(13, () => {
+    focused && handleEnter();
+  });
 
   const showDropdown = () => {
     setIsOpen(true);
@@ -76,9 +122,16 @@ function SearchableDropdown({
               key={index}
               className="dropdown-item"
               label={item}
+              onMouseOver={() => {
+                setArrowSelected(index);
+              }}
               onClick={() => {
                 handleSelect(index);
               }}
+              style={
+                index === arrowSelected ? { backgroundColor: "#d4dbf6" } : {}
+              }
+              ref={index === arrowSelected ? currOptionRef : null}
             >
               <p>{item}</p>
               <Checkbox

@@ -48,9 +48,6 @@
 .dropdown-item:nth-child(even) {
   background-color: #ececec;
 }
-.dropdown-item:hover {
-  background-color: #d4dbf6;
-}
 .icon {
   color: grey;
 }
