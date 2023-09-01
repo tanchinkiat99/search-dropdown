@@ -1,4 +1,12 @@
-# Getting Started with Create React App
+# Search Dropdown
+
+This is a simple search dropdown component.
+
+Click [here](https://search-dropdown-zeta.vercel.app/) to view the component.
+
+![Alt text](image.png)
+
+_Screenshot of dropdown components_
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
