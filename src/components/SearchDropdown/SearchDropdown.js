@@ -29,6 +29,7 @@ function SearchableDropdown({
 
   // Handle selecting an item from the dropdown
   const handleSelect = (index) => {
+    onSelect();
     const updatedSelected = [...selected];
     updatedSelected[index] = !updatedSelected[index];
     setSelected(updatedSelected);

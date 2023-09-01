@@ -1,6 +1,6 @@
 import React from "react";
 import "./App.css";
-import SearchDropdown from "./SearchDropdown/SearchDropdown";
+import SearchDropdown from "./components/SearchDropdown/SearchDropdown";
 import currencyData from "./data/currencies.json";
 
 function App() {
