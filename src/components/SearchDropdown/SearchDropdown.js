@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { AiOutlineSearch } from "react-icons/ai";
 import Checkbox from "@mui/material/Checkbox";
 import useDebounce from "../../hooks/useDebounce";
@@ -19,48 +19,50 @@ function SearchableDropdown({
   asyncSearch = true,
 }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [searchInput, setSearchInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [focused, setFocused] = useState(false);
+  const [matchedOptions, setMatchedOptions] = useState(
+    options.map((option) => false)
+  );
   const [selected, setSelected] = useState(options.map((option) => false));
   const [arrowSelected, setArrowSelected] = useState(-1);
   const { updatedValue: debouncedSearchQuery, isLoading } = useDebounce(
-    searchQuery,
+    searchInput,
     1000
   );
-  const getSearchQuery = useCallback(() => {
-    return asyncSearch ? debouncedSearchQuery : searchQuery;
-  }, [asyncSearch, debouncedSearchQuery, searchQuery]);
-
   const currOptionRef = useRef(null);
 
-  useEffect(() => {
-    if (
-      arrowSelected >= 0 &&
-      arrowSelected < options.length &&
-      currOptionRef &&
-      currOptionRef.current
-    ) {
-      currOptionRef.current.scrollIntoView({
-        behavior: "smooth",
-        block: "nearest",
-      });
-    }
-  }, [arrowSelected, options.length]);
-
-  const handleArrowDown = () => {
-    if (arrowSelected < 0 || arrowSelected >= options.length - 1) {
-      setArrowSelected(0);
+  const getNextOptionIdx = (curr) => {
+    if (curr < 0 || curr >= options.length - 1) {
+      return 0;
     } else {
-      setArrowSelected(arrowSelected + 1);
+      return curr + 1;
     }
   };
 
-  const handleArrowUp = () => {
-    if (arrowSelected <= 0 || arrowSelected > options.length - 1) {
-      setArrowSelected(options.length - 1);
+  const getPrevOptionIdx = (curr) => {
+    if (curr <= 0 || curr > options.length - 1) {
+      return options.length - 1;
     } else {
-      setArrowSelected(arrowSelected - 1);
+      return curr - 1;
     }
+  };
+
+  const handleArrowDown = () => {
+    let nextIdx = getNextOptionIdx(arrowSelected);
+    while (!matchedOptions[nextIdx]) {
+      nextIdx = getNextOptionIdx(nextIdx);
+    }
+    setArrowSelected(nextIdx);
+  };
+
+  const handleArrowUp = () => {
+    let nextIdx = getPrevOptionIdx(arrowSelected);
+    while (!matchedOptions[nextIdx]) {
+      nextIdx = getPrevOptionIdx(nextIdx);
+    }
+    setArrowSelected(nextIdx);
   };
 
   const handleEnter = () => {
@@ -89,7 +91,7 @@ function SearchableDropdown({
     setIsOpen(false);
   };
 
-  // Handle selecting an item from the dropdown
+  // Handles selecting an item from the dropdown
   const handleSelect = (index) => {
     onSelect();
     const updatedSelected = [...selected];
@@ -106,9 +108,10 @@ function SearchableDropdown({
   };
 
   const handleOnTextInputChange = (e) => {
-    setSearchQuery(e.target.value);
+    setSearchInput(e.target.value);
   };
 
+  // Renders a spinning loading indicator for async search
   const renderLoadingIndicator = () => {
     return (
       isLoading &&
@@ -118,36 +121,34 @@ function SearchableDropdown({
     );
   };
 
+  // Renders the dropdown component
   const renderDropDown = () => {
-    const newSearchQuery = getSearchQuery();
-    const searchResults = options
-      .map(
-        (item, index) =>
-          item.toLowerCase().includes(newSearchQuery.toLowerCase()) && (
-            <div
-              key={index}
-              className="dropdown-item"
-              label={item}
-              onMouseOver={() => {
-                setArrowSelected(index);
-              }}
-              onClick={() => {
-                handleSelect(index);
-              }}
-              style={
-                index === arrowSelected ? { backgroundColor: "#d4dbf6" } : {}
-              }
-              ref={index === arrowSelected ? currOptionRef : null}
-            >
-              <p>{item}</p>
-              <Checkbox
-                checked={selected[index]}
-                onChange={() => handleSelect(index)}
-              />
-            </div>
-          )
-      )
-      .filter((item) => item);
+    const searchResults = options.map(
+      (item, index) =>
+        matchedOptions[index] && (
+          <div
+            key={index}
+            className="dropdown-item"
+            label={item}
+            onMouseOver={() => {
+              setArrowSelected(index);
+            }}
+            onClick={() => {
+              handleSelect(index);
+            }}
+            style={
+              index === arrowSelected ? { backgroundColor: "#d4dbf6" } : {}
+            }
+            ref={index === arrowSelected ? currOptionRef : null}
+          >
+            <p>{item}</p>
+            <Checkbox
+              checked={selected[index]}
+              onChange={() => handleSelect(index)}
+            />
+          </div>
+        )
+    );
     if (searchResults.length === 0) {
       searchResults.push(
         <div className="dropdown-no-result">
@@ -164,14 +165,48 @@ function SearchableDropdown({
     );
   };
 
+  // Updates the searchQuery state with either the current input query
+  // or debounced query based on the asyncSearch prop
   useEffect(() => {
-    const newSearchQuery = getSearchQuery();
-    if (focused && (showDropdownOnFocus || newSearchQuery.length > 0)) {
+    if (asyncSearch) {
+      setSearchQuery(debouncedSearchQuery);
+    } else {
+      setSearchQuery(searchInput);
+    }
+  }, [asyncSearch, debouncedSearchQuery, searchInput]);
+
+  // Updates the list keeping track of options matching the current query
+  useEffect(() => {
+    setMatchedOptions(
+      options.map((option) =>
+        option.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    );
+  }, [searchQuery, options]);
+
+  // Scrolls selected option into view when navigating with arrow keys
+  useEffect(() => {
+    if (
+      arrowSelected >= 0 &&
+      arrowSelected < options.length &&
+      currOptionRef &&
+      currOptionRef.current
+    ) {
+      currOptionRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+      });
+    }
+  }, [arrowSelected, options.length]);
+
+  // Toggle dropdown view based on focus
+  useEffect(() => {
+    if (focused && (showDropdownOnFocus || searchQuery.length > 0)) {
       showDropdown();
-    } else if (!focused || newSearchQuery.length === 0) {
+    } else if (!focused || searchQuery.length === 0) {
       hideDropdown();
     }
-  }, [focused, getSearchQuery, showDropdownOnFocus, asyncSearch]);
+  }, [focused, showDropdownOnFocus, asyncSearch, searchQuery]);
 
   return (
     <div className="search-wrapper">
@@ -191,7 +226,7 @@ function SearchableDropdown({
         <input
           type="text"
           placeholder={placeholder}
-          value={searchQuery}
+          value={searchInput}
           onChange={handleOnTextInputChange}
           onFocus={handleOnFocus}
           disabled={disabled}
